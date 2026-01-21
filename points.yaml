@@ -1,0 +1,1058 @@
+openapi: 3.1.0
+info:
+  title: Maritz Points Data API
+  description: | 
+    Maritz API specifications for working with points data, such as points debit and credit records, require `KPromotion` to be installed on your Maritz account and website. You can replace the default `Maritz website domain` with your own Maritz host domain and specify the `API version` you want to test. Your `Maritz website domain` can either be a custom domain configured for the website or the default domain, such as `webname_accountname.Maritzplay.com`. Authorization requires the profile to have the `PointsEditor` role to access this endpoint.
+    
+    To use this site to send API requests to your website, follow these steps:
+      -  **Step 1**: Install `KCORS` from the marketplace and enable it in the website.
+      -  **Step 2**: Navigate to the `Cross-origin resource sharing` in the `Security Settings` of the website settings.
+      -  **Step 3**: Set `Allow origins` to `https://api.Maritz.co`.
+      -  **Step 4**: Set `Allow headers` to `Authorization` and `Content-Type`.
+
+servers:
+  - url: https://{Maritz website domain}/api/{API version}
+    description: API endpoint root URL
+    variables:
+      Maritz website domain:
+        default: "example.com"
+        description: Enter your website host domain
+      API version:
+        default: "v1"
+        enum:
+          - v1 # more to be added
+        description: Enter the API version
+      # openidConnectUrl:
+      #   description: Enter your OpenIDConnect issuer URL. Eg. https://openidconnect.net/
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    # openIdConnect:
+    #   type: openIdConnect
+    #   openIdConnectUrl: { openidConnectUrl }
+    #   description: Check our documentation here https://docs.Maritz.co/programs/masterclass/sso/sso-010/poverview.html
+  schemas:
+    JsonResult:
+      type: object
+      properties:
+        data:
+          type: object
+          description: The data returned by the endpoint, if any.
+        fieldMessages:
+          type: array
+          description: A list of invalid fields and their corresponding error messages, if any.
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: The name of the field.
+                example: title
+              message:
+                type: string
+                message: The error message.
+                example:  A value is required
+        status:
+          type: boolean
+          description: Indicates whether the operation was successful (`true`) or failed (`false`).
+        nextHref:
+          type: string
+          description: This field is intended to be set when a new object is created and contains the path to that object.
+          example: 11483
+        messages:
+          type: array
+          description: A list of messages related to the result of the operation, such as success or error messages.
+          items:
+            type: string
+          example: [ "Success" ]
+
+    PointsCreditRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The ID of the points credit record
+          example: 65337118
+        issuedToOrgId:
+          type: integer
+          format: int64
+          description: The ID of the organisation that this record is attributed to, will be null when the record is attributed to a profile
+          example: 32213
+        issuedToOrgName:
+          type: string
+          description: The name of the organisation that this record is attributed to, will be null when the record is attributed to a profile
+          example: sales-team
+        issuedToProfileId:
+          type: integer
+          format: int64
+          description: The ID of the profile that this record is attributed to, will be null when the record is attributed to an organisation
+          example: 32213
+        issuedToProfileName:
+          type: string
+          description: The name of the profile that this record is attributed to, will be null when the record is attributed to a organisation
+          example: user-1
+        rewardName:
+          type: string
+          description: The name of the reward that this record belongs to
+          example: incentive-bucket
+        rewardId:
+          type: integer
+          format: int64
+          description: The ID of the reward that this record belongs to
+          example: 23134123
+        issuedDate:
+          type: string
+          format: date-time
+          description: The date on which the points credit record was issued
+          example: 2023-09-22T11:57:44.631+1000
+        expiryDate:
+          type: string
+          format: date-time
+          description: The date on which the points credit record will expire
+          example: 2025-09-22T11:57:44.631+1000
+        expired:
+          type: boolean
+          description: A flag indicates that this record has expired
+          example: false
+        completelyUsed:
+          type: boolean
+          description: A flag indicates that this record has been completely used
+          example: false
+        numPoints:
+          type: float
+          description: The number of points that were issued in this record
+          example: 1000
+        reason:
+          type: string
+          description:  The reason for issuing this points credit record
+        pointsTagName:
+          type: string
+          description: The tag name to mark this points credit record
+          example: tag-1
+        issuedByProfileId:
+          type: integer
+          format: int64
+          description: The ID of the profile that issued this points credit record
+          example: 32213
+        issuedByProfileName:
+          type: string
+          description: The name of the profile that issued this points credit record
+          example: user-2
+        createdDate:
+          type: string
+          format: date-time
+          description: The date on which the points credit record was created
+          example: 2023-09-22T11:57:44.631+1000
+
+    JsonResultOfPointsCreditRecords:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                totalRecords:
+                  type: integer
+                  format: int64
+                  description: The total points credit records matching the query without `limit` restriction
+                  example: 1000
+                limit:
+                  type: integer
+                  format: int64
+                  description: The limit of the records per page
+                  example: 10
+                records:
+                  type: array
+                  description: The points credit records matching the query 
+                  items:
+                    $ref: "#/components/schemas/PointsCreditRecord"
+    JsonResultOfPointsCreditRecord:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/PointsCreditRecord"
+
+    PointsDebitRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The ID of the points debit record
+          example: 65337118
+        issuedToOrgId:
+          type: integer
+          format: int64
+          description: The ID of the organisation that this record is attributed to, will be null when the record is attributed to a profile
+          example: 32213
+        issuedToOrgName:
+          type: string
+          description: The name of the organisation that this record is attributed to, will be null when the record is attributed to a profile
+          example: sales-team
+        issuedToProfileId:
+          type: integer
+          format: int64
+          description: The ID of the profile that this record is attributed to, will be null when the record is attributed to an organisation
+          example: 32213
+        issuedToProfileName:
+          type: string
+          description: The name of the profile that this record is attributed to, will be null when the record is attributed to a organisation
+          example: user-1
+        rewardName:
+          type: string
+          description: The name of the reward that this record belongs to
+          example: incentive-bucket
+        rewardId:
+          type: integer
+          format: int64
+          description: The ID of the reward that this record belongs to
+          example: 23134123
+        issuedDate:
+          type: string
+          format: date-time
+          description: The date on which the points debit record was issued
+          example: 2023-09-22T11:57:44.631+1000
+        numPoints:
+          type: float
+          description: The number of points that were issued in this record
+          example: 1000
+        reason:
+          type: string
+          description: The reason for issuing this points debit record
+        reasonCode:
+          type: string
+          description: The reason code for this debit record
+          enum:
+            - P
+            - E
+          example: E
+        pointsTagName:
+          type: string
+          description: The tag name to mark this points debit record
+          example: tag-1
+        issuedByProfileId:
+          type: integer
+          format: int64
+          description: The ID of the profile that issued this points debit record
+          example: 32213
+        issuedByProfileName:
+          type: string
+          description: The name of the profile that issued this points debit record
+          example: user-2
+        createdDate:
+          type: string
+          format: date-time
+          description: The date on which the points credit record was created
+          example: 2023-09-22T11:57:44.631+1000
+        cartId:
+          type: string
+          description: The `Cart ID` of the cart that this debit record belongs to
+          example: VLTST-000647
+        itemType:
+          type: string
+          description: The type of the item associated with this debit record
+          example: 2025-09-22T11:57:44.631+1000
+        itemId:
+          type: integer
+          format: int64
+          description: The `ID` of the item associated with this debit record
+          example: 2025-09-22T11:57:44.631+1000
+
+    JsonResultOfPointsDebitRecords:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                totalRecords:
+                  type: integer
+                  format: int64
+                  description: The total points debit records matching the query without `limit` restriction
+                  example: 1000
+                limit:
+                  type: integer
+                  format: int64
+                  description: The limit of the records per page
+                  example: 10
+                records:
+                  type: array
+                  description: The points debit records matching the query 
+                  items:
+                    $ref: "#/components/schemas/PointsDebitRecord"
+    JsonResultOfPointsDebitRecord:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/PointsDebitRecord"
+
+
+paths:
+  /points/credit:
+    get:
+      tags:
+        - Points Credit
+      summary: Get a list of points credit records
+      parameters:
+        - name: limit
+          required: true
+          in: query
+          description: Limit the number of results returned, maximum is 1000
+          schema:
+            type: integer
+            format: int32
+            example: 100
+        - name: offset
+          required: true
+          in: query
+          description: Offset the results by a certain number for pagination.
+          schema:
+            type: integer
+            format: int32
+            example: 0
+        - name: dateField
+          in: query
+          description: Name of the date field that will be used to restrict the start and end dates.
+          schema:
+            type: string
+            default: dateEntered
+            enum:
+              - issuedDate
+              - expiryDate
+              - createdDate
+            nullable: true
+        - name: startDate
+          required: true
+          in: query
+          description: The start of the period provided in `dateField`. The date format must follow the locale settings in your account (e.g., `MM/DD/YYYY HH:mm` or `DD/MM/YYYY HH:mm`). If you're unsure, we recommend using the `ISO 8601` date format.
+          schema:
+            type: string
+            format: date-time
+            example: 2024-10-01T11:57:44.631+1000
+        - name: endDate
+          required: true
+          in: query
+          description: The end of the period provided in `dateField`. The date format must follow same format as in the `startDate` field.
+          schema:
+            type: string
+            format: date-time
+            example: 2024-10-28T11:57:44.631+1000
+        - name: rewardId
+          in: query
+          description: The `Name` or `ID` of the reward that the points credit records belong to.
+          schema:
+            type: string
+            example: reward-1
+            nullable: true
+        - name: numPointsFrom
+          in: query
+          description: The minimum number of points credited in the record.
+          schema:
+            type: float
+            example: 50
+            nullable: true
+        - name: numPointsTo
+          in: query
+          description: The maximum number of points credited in the record.
+          schema:
+            type: float
+            example: 1000
+            nullable: true
+        - name: issuedToProfileId
+          in: query
+          description: The `User ID` or `ID` of the profile that this credit record is attributed to.
+          schema:
+            type: string
+            example: user-1
+            nullable: true
+        - name: issuedToOrgId
+          in: query
+          description: The `Org ID` or `ID` of the organisation that this credit record is attributed to.
+          schema:
+            type: string
+            example: team-1
+            nullable: true
+        - name: issuedByProfileId
+          in: query
+          description: The `User ID` or `ID` of the profile that issued this credit record.
+          schema:
+            type: string
+            example: user-2
+            nullable: true
+        - name: expired
+          in: query
+          description: To filter expired points credit records.
+          schema:
+            type: boolean
+            format: boolean
+            example: false
+            nullable: true
+        - name: completelyUsed
+          in: query
+          description: To filter the completely used points credit records.
+          schema:
+            type: boolean
+            format: boolean
+            example: false
+            nullable: true
+        - name: sortBy
+          in: query
+          description: The field is used to sort the results.
+          schema:
+            type: string
+            default: dateEntered
+            enum:
+              - id
+              - numPoints
+              - issuedDate
+              - expiryDate
+              - createdDate
+            nullable: true
+        - name: sortOrder
+          in: query
+          description: >
+            Sort order of the results:
+              *  `desc` - Sort in descending order
+              *  `asc` -  Sort in ascending order
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+            nullable: true
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResultOfPointsCreditRecords"
+              examples:
+                Success:
+                  value:
+                      data:
+                        totalRecords: 1000
+                        records:
+                          - id: 805
+                            issuedToProfileId: 24
+                            issuedToProfileName: "dayan"
+                            rewardName: "first-reward"
+                            rewardId: 8
+                            issuedDate: "2025-03-08T22:41:10.323+0200"
+                            expiryDate: "2026-03-08T22:41:10.323+0200"
+                            expired: false
+                            completelyUsed: false
+                            numPoints: 100
+                            reason: "Claim reward"
+                            pointsTagName: ""
+                            issuedByProfileId: 2
+                            issuedByProfileName: "admin"
+                            createdDate: "2025-03-17T23:55:02.550+0200"
+                          - id: 806
+                            issuedToOrgId: 12
+                            issuedToOrgName: "sales-team"
+                            rewardName: "second-reward"
+                            rewardId: 9
+                            issuedDate: "2025-03-09T22:41:10.323+0200"
+                            expiryDate: "2026-03-09T22:41:10.323+0200"
+                            expired: false
+                            completelyUsed: true
+                            numPoints: 200
+                            reason: "Sales bonus"
+                            pointsTagName: "tag-1"
+                            issuedByProfileId: 2
+                            issuedByProfileName: "admin"
+                            createdDate: "2025-03-17T23:55:02.550+0200"
+                      fieldMessages: []
+                      messages: []
+                      nextHref: null
+                      status: true
+                Failure:
+                  value:
+                    data: null
+                    fieldMessages: []
+                    messages:
+                      - No points credit records found
+                    nextHref: null
+                    status: false
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - field: dateField
+                        message: Date field is invalid
+                    messages: []
+                    nextHref: null
+                    status: false
+
+        "500":
+          description: Internal server error
+        "400":
+          description: Unauthorized / Bad request
+    post:
+      tags:
+        - Points Credit
+      summary: Create points credit records
+      requestBody:
+        description: Create points credit records
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of parameters for creating points credit records. Each item creates one record
+              items:
+                type: object
+                required:
+                  - rewardId
+                  - numPoints
+                properties:
+                  rewardId:
+                    description: >
+                      The identifier of the reward for the points credit record.<br>
+                      The field could be either `ID` or `name`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `name`: The value must be a string
+                    anyOf:
+                      - type: integer
+                        format: int64
+                        example: 97407419
+                      - type: string
+                        example: first-reward
+                  issuedToProfileId:
+                    description: >
+                      The identifier of the profile this points credit record is issued to. It must be provided if the reward is profile-based<br>
+                      The field could be either `ID` or `name`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `name`: The value must be a string
+                    anyOf:
+                      - type: integer
+                        format: int64
+                        example: 321341
+                      - type: string
+                        example: dayan
+                  issuedToOrgId:
+                    description: >
+                      The identifier of the organisation this points credit record is issued to. It must be provided if the reward is organisation-based<br>
+                      The field could be either `ID` or `name`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `name`: The value must be a string
+                    anyOf:
+                      - type: integer
+                        format: int64
+                        example: 321332
+                      - type: string
+                        example: team     
+                  numPoints:
+                    type: number
+                    format: double
+                    description: The amount of points to credit
+                    example: 120
+                  reason:
+                    type: string
+                    description: The reason for issuing this points credit record
+                    example: Claim reward
+                  pointsTagName:
+                    type: string
+                    description: The tag name to mark this points credit record
+                  issuedDate:
+                    type: string
+                    format: date-time
+                    description: > 
+                      The date on which this points credit record was issued.<br>
+                      If not provided, the current date and time will be used.<br>
+                      If provided, the date format must follow the locale settings in your account (e.g., `MM/DD/YYYY HH:mm` or `DD/MM/YYYY HH:mm`).<br>
+                      If you're unsure, we recommend using the `ISO 8601` date format.<br>
+                    example: 2023-07-05T12:55:00.000+1000
+                  expiryDate:
+                    type: string
+                    format: date-time
+                    description: > 
+                      The date on which this points credit will expire.<br>
+                      The date format must follow the locale settings in your account (e.g., `MM/DD/YYYY HH:mm` or `DD/MM/YYYY HH:mm`).<br>
+                      If you're unsure, we recommend using the `ISO 8601` date format.<br>
+                    example: 2023-07-05T12:55:00.000+1000
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResult"
+              examples:
+                Success:
+                    value:
+                        data: null
+                        fieldMessages: []
+                        messages: []
+                        nextHref: '52156'
+                        status: true
+                Failure:
+                  value:
+                    data: null
+                    fieldMessages: []
+                    messages:
+                      - Cannot create points credit record
+                    nextHref: null
+                    status: false
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - item: 0
+                        field: amount
+                        message: Invalid number
+                    messages: []
+                    nextHref: null
+                    status: false
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+
+  /points/credit/{id}:
+    get:
+      tags:
+        - Points Credit
+      summary: get points credit record by id
+      description: Returns a single points credit record
+      parameters:
+        - name: id
+          description: The ID of the points credit record
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 65337118
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResultOfPointsCreditRecord"
+              example:
+                data:
+                  id: 65337118
+                  issuedToProfileId: 24
+                  issuedToProfileName: "dayan"
+                  rewardName: "first-reward"
+                  rewardId: 8
+                  issuedDate: "2025-03-08T22:41:10.323+0200"
+                  expiryDate: "2026-03-08T22:41:10.323+0200"
+                  expired: false
+                  completelyUsed: false
+                  numPoints: 100
+                  reason: "Claim reward"
+                  pointsTagName: ""
+                  issuedByProfileId: 2
+                  issuedByProfileName: "admin"
+                  createdDate: "2025-03-17T23:55:02.550+0200"
+                fieldMessages: []
+                messages: []
+                nextHref: null
+                status: true
+        404:
+          description: Points credit record does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+
+  /points/debit:
+    get:
+      tags:
+        - Points Debit
+      summary: Get a list of points debit records
+      parameters:
+        - name: limit
+          required: true
+          in: query
+          description: Limit the number of results returned, maximum is 1000
+          schema:
+            type: integer
+            format: int32
+            example: 100
+        - name: offset
+          required: true
+          in: query
+          description: Offset the results by a certain number for pagination.
+          schema:
+            type: integer
+            format: int32
+            example: 0
+        - name: dateField
+          in: query
+          description: Name of the date field that will be used to restrict the start and end dates.
+          schema:
+            type: string
+            default: dateEntered
+            enum:
+              - issuedDate
+              - expiredDate
+              - createdDate
+            nullable: true
+        - name: startDate
+          required: true
+          in: query
+          description: The start of the period provided in `dateField`. The date format must follow the locale settings in your account (e.g., `MM/DD/YYYY HH:mm` or `DD/MM/YYYY HH:mm`). If you're unsure, we recommend using the `ISO 8601` date format.
+          schema:
+            type: string
+            format: date-time
+            example: 2024-10-01T11:57:44.631+1000
+        - name: endDate
+          required: true
+          in: query
+          description: The end of the period provided in `dateField`. The date format must follow same format as in the `startDate` field.
+          schema:
+            type: string
+            format: date-time
+            example: 2024-10-28T11:57:44.631+1000
+        - name: rewardId
+          in: query
+          description: The `Name` or `ID` of the reward that the points debit records belong to.
+          schema:
+            type: string
+            example: reward-1
+            nullable: true
+        - name: numPointsFrom
+          in: query
+          description: The minimum number of points debited in the record.
+          schema:
+            type: float
+            example: 50
+            nullable: true
+        - name: numPointsTo
+          in: query
+          description: The maximum number of points debited in the record.
+          schema:
+            type: float
+            example: 1000
+            nullable: true
+        - name: issuedToProfileId
+          in: query
+          description: The `User ID` or `ID` of the profile that this debit record is attributed to.
+          schema:
+            type: string
+            example: user-1
+            nullable: true
+        - name: issuedToOrgId
+          in: query
+          description: The `Org ID` or `ID` of the organisation that this debit record is attributed to.
+          schema:
+            type: string
+            example: team-1
+            nullable: true
+        - name: issuedByProfileId
+          in: query
+          description: The `User ID` or `ID` of the profile that issued this debit record.
+          schema:
+            type: string
+            example: user-2
+            nullable: true
+        - name: cartId
+          in: query
+          description: The `Cart ID` of the cart that this debit record belongs to.
+          schema:
+            type: string
+            example: VLTST-000647
+            nullable: true
+        - name: itemType
+          in: query
+          description: The type of the item associated with this debit record.
+          schema:
+            type: string
+            nullable: true
+        - name: itemId
+          in: query
+          description: The `ID` of the item associated with this debit record.
+          schema:
+            type: integer
+            format: int64
+            nullable: true
+        - name: reasonCode
+          in: query
+          description: The reason code for this debit record.
+          schema:
+            type: string
+            enum:
+              - P
+              - E
+            nullable: true
+        - name: sortBy
+          in: query
+          description: The field is used to sort the results.
+          schema:
+            type: string
+            default: dateEntered
+            enum:
+              - id
+              - numPoints
+              - issuedDate
+              - expiredDate
+              - createdDate
+            nullable: true
+        - name: sortOrder
+          in: query
+          description: >
+            Sort order of the results:
+              *  `desc` - Sort in descending order
+              *  `asc` -  Sort in ascending order
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+            nullable: true
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResultOfPointsDebitRecords"
+              examples:
+                Success:
+                  value:
+                      data:
+                        totalRecords: 1000
+                        offset: 0
+                        limit: 10
+                        records:
+                          - id: 905
+                            issuedToProfileId: 24
+                            issuedToProfileName: "dayan"
+                            rewardName: "first-reward"
+                            rewardId: 8
+                            issuedDate: "2025-03-08T22:41:10.323+0200"
+                            numPoints: 100
+                            reason: "Expired reward"
+                            reasonCode: E
+                            pointsTagName: "tag-1"
+                            issuedByProfileId: 2
+                            issuedByProfileName: "admin"
+                            createdDate: "2025-03-17T23:55:02.550+0200"
+                            cartId: "VLTST-000647"
+                            -itemType: ""
+                            itemId: null
+                          - id: 906
+                            issuedToOrgId: 12
+                            issuedToOrgName: "sales-team"
+                            rewardName: "second-reward"
+                            rewardId: 9
+                            issuedDate: "2025-03-09T22:41:10.323+0200"
+                            numPoints: 200
+                            reason: "Purchase product B"
+                            reasonCode: P
+                            pointsTagName: ""
+                            issuedByProfileId: 2
+                            issuedByProfileName: "admin"
+                            createdDate: "2025-03-17T23:55:02.550+0200"
+                            cartId: "VLTST-000647"
+                            itemType: ""
+                            itemId: null
+                      fieldMessages: []
+                      messages: []
+                      nextHref: null
+                      status: true
+                Failure:
+                  value:
+                    data: null
+                    fieldMessages: []
+                    messages:
+                      - No points debit records found
+                    nextHref: null
+                    status: false
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - field: dateField
+                        message: Date field is invalid
+                    messages: []
+                    nextHref: null
+                    status: false
+
+        "500":
+          description: Internal server error
+        "400":
+          description: Unauthorized / Bad request
+    post:
+      tags:
+        - Points Debit
+      summary: Create points debit records
+      requestBody:
+        description: Create points debit records
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of parameters for creating points debit records. Each item creates one record
+              items:
+                type: object
+                required:
+                  - rewardId
+                  - numPoints
+                properties:
+                  rewardId:
+                    description: >
+                      The identifier of the reward for the points debit record.<br>
+                      The field could be either `ID` or `name`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `name`: The value must be a string
+                    anyOf:
+                      - type: integer
+                        format: int64
+                        example: 97407419
+                      - type: string
+                        example: first-reward
+                  issuedToProfileId:
+                    description: >
+                      The identifier of the profile this points debit record is issued to. It must be provided if the reward is profile-based<br>
+                      The field could be either `ID` or `name`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `name`: The value must be a string
+                    anyOf:
+                      - type: integer
+                        format: int64
+                        example: 321341
+                      - type: string
+                        example: dayan
+                  issuedToOrgId:
+                    description: >
+                      The identifier of the organisation this points debit record is issued to. It must be provided if the reward is organisation-based<br>
+                      The field could be either `ID` or `name`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `name`: The value must be a string
+                    anyOf:
+                      - type: integer
+                        format: int64
+                        example: 321332
+                      - type: string
+                        example: team     
+                  numPoints:
+                    type: number
+                    format: double
+                    description: The amount of points to debit
+                    example: 120
+                  reason:
+                    type: string
+                    description: The reason for issuing this points credit record
+                    example: Purchased product A
+                  reasonCode:
+                    type: string
+                    description: The reason code to mark this points debit record
+                  issuedDate:
+                    type: string
+                    format: date-time
+                    description: >
+                      If not provided, the current date and time will be used.<br>
+                      If provided, the date format must follow the locale settings in your account (e.g., `MM/DD/YYYY HH:mm` or `DD/MM/YYYY HH:mm`).<br>
+                      If you're unsure, we recommend using the `ISO 8601` date format.<br>
+                    example: 2023-07-05T12:55:00.000+1000
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResult"
+              examples:
+                Success:
+                    value:
+                        data: null
+                        fieldMessages: []
+                        messages: []
+                        nextHref: '52156'
+                        status: true
+                Failure:
+                  value:
+                    data: null
+                    fieldMessages: []
+                    messages:
+                      - Cannot create points debit record
+                    nextHref: null
+                    status: false
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - item: 0
+                        field: amount
+                        message: Invalid number
+                    messages: []
+                    nextHref: null
+                    status: false
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+
+  /points/debit/{id}:
+    get:
+      tags:
+        - Points Debit
+      summary: get points debit record by id
+      description: Returns a single points debit record
+      parameters:
+        - name: id
+          description: The ID of the points debit record
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 65337118
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResultOfPointsCreditRecord"
+              example:
+                data:
+                  id: 65337118
+                  issuedToProfileId: 24
+                  issuedToProfileName: "dayan"
+                  rewardName: "first-reward"
+                  rewardId: 8
+                  issuedDate: "2025-03-08T22:41:10.323+0200"
+                  numPoints: 100
+                  reason: "Expired reward"
+                  reasonCode: E
+                  pointsTagName: "tag-1"
+                  issuedByProfileId: 2
+                  issuedByProfileName: "admin"
+                  createdDate: "2025-03-17T23:55:02.550+0200"
+                  cartId: "VLTST-000647"
+                  -itemType: ""
+                  itemId: null
+                fieldMessages: []
+                messages: []
+                nextHref: null
+                status: true
+        404:
+          description: Points credit record does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+
+security:
+  - basicAuth: [ ]
+  # - openIdConnect: []
