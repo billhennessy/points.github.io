@@ -15,7 +15,7 @@ servers:
     description: API endpoint root URL
     variables:
       Maritz website domain:
-        default: "example.com"
+        default: "v4-integrations-resideo.kademiplay.com/"
         description: Enter your website host domain
       API version:
         default: "v1"
