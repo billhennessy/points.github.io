@@ -4,11 +4,7 @@ info:
   description: | 
     Maritz API specifications for working with points data, such as points debit and credit records, require `KPromotion` to be installed on your Maritz account and website. You can replace the default `Maritz website domain` with your own Maritz host domain and specify the `API version` you want to test. Your `Maritz website domain` can either be a custom domain configured for the website or the default domain, such as `webname_accountname.Maritzplay.com`. Authorization requires the profile to have the `PointsEditor` role to access this endpoint.
     
-    # To use this site to send API requests to your website, follow these steps:
-    #   -  **Step 1**: Install `KCORS` from the marketplace and enable it in the website.
-    #   -  **Step 2**: Navigate to the `Cross-origin resource sharing` in the `Security Settings` of the website settings.
-    #   -  **Step 3**: Set `Allow origins` to `https://api.Maritz.co`.
-    #   -  **Step 4**: Set `Allow headers` to `Authorization` and `Content-Type`.
+   
 
 servers:
   - url: https://{Maritz website domain}/api/{API version}
