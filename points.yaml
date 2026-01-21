@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Maritz Points Data API
   description: | 
-    Maritz API specifications for working with points data, such as points debit and credit records, require `KPromotion` to be installed on your Maritz account and website. You can replace the default `Maritz website domain` with your own Maritz host domain and specify the `API version` you want to test. Your `Maritz website domain` can either be a custom domain configured for the website or the default domain, such as `webname_accountname.Maritzplay.com`. Authorization requires the profile to have the `PointsEditor` role to access this endpoint.
+    Maritz API specifications for working with points data, such as points debit and credit records, require `KPromotion` to be installed on your Maritz account and website. You can replace the default `Maritz website domain` with your own Maritz host domain and specify the `API version` you want to test. Your `Maritz website domain` can either be a custom domain configured for the website or the default domain, such as `webname_accountname.kademiplay.com`. Authorization requires the profile to have the `PointsEditor` role to access this endpoint.
     
    
 
