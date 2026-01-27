@@ -523,9 +523,9 @@ paths:
                     anyOf:
                       - type: integer
                         format: int64
-                        example: 97407419
+                        example: 123677096
                       - type: string
-                        example: first-reward
+                        example: rewards-program
                   issuedToProfileId:
                     description: >
                       The identifier of the profile this points credit record is issued to. It must be provided if the reward is profile-based<br>
@@ -913,9 +913,9 @@ paths:
                     anyOf:
                       - type: integer
                         format: int64
-                        example: 97407419
+                        example: 123677096
                       - type: string
-                        example: first-reward
+                        example: rewards-program
                   issuedToProfileId:
                     description: >
                       The identifier of the profile this points debit record is issued to. It must be provided if the reward is profile-based<br>
