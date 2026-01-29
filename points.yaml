@@ -292,6 +292,22 @@ components:
             data:
               $ref: "#/components/schemas/PointsDebitRecord"
 
+    JsonResultOfPointsDebitRecord:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/PointsDebitRecord"
+
+    JsonResultOfPointsBalance:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              pointsBalance: double
+              description: The current points balance of the profile or organisation
 
 paths:
   /points/credit:
