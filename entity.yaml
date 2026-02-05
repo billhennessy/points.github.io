@@ -1,0 +1,1686 @@
+openapi: 3.1.0
+info:
+  title: Kademi Entity API
+  description: |
+    Kademi API specifications for managing entities such as profiles or organisations. You can replace the default `Kademi website domain` with your own Kademi host domain and specify the `API version` you want to test. Your `Kademi website domain` can either be a custom domain configured for the website or the default domain, such as `webname_accountname.kademiplay.com`. Authorization requires the profile to have the `User Administrator` role to access profile endpoints and the `Organisation Administrator` role to access organisation endpoints.
+    
+    To use this site to send API requests to your website, follow these steps:
+      -  **Step 1**: Install `KCORS` from the marketplace and enable it in the website.
+      -  **Step 2**: Navigate to the `Cross-origin resource sharing` in the `Security Settings` of the website settings.
+      -  **Step 3**: Set `Allow origins` to `https://api.kademi.co`.
+      -  **Step 4**: Set `Allow headers` to `Authorization` and `Content-Type`.
+    
+    <a class="btn btn-blue" href="/entity-change-logs.html">View Change Logs</a>
+
+servers:
+  - url: https://{Kademi website domain}/api/{API version}
+    description: API endpoint root URL
+    variables:
+      Kademi website domain:
+        default: "example.com"
+        description: Enter your website host domain
+      API version:
+        default: "v4"
+        enum:
+          - v1 # more to be added
+          - v2
+          - v3
+          - v4
+        description: Enter the API version
+      # openidConnectUrl:
+      #   description: Enter your OpenIDConnect issuer URL. Eg. https://openidconnect.net/
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    # openIdConnect:
+    #   type: openIdConnect
+    #   openIdConnectUrl: { openidConnectUrl }
+    #   description: Check our documentation here https://docs.kademi.co/programs/masterclass/sso/sso-010/poverview.html
+  schemas:
+    JsonResult:
+      type: object
+      properties:
+        data:
+          type: object
+          description: The data returned by the endpoint, if any.
+        fieldMessages:
+          type: array
+          description: A list of invalid fields and their corresponding error messages, if any.
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: The name of the field.
+                example: title
+              message:
+                type: string
+                message: The error message.
+                example:  A value is required
+        status:
+          type: boolean
+          description: Indicates whether the operation was successful (`true`) or failed (`false`).
+        nextHref:
+          type: string
+          description: This field is intended to be set when a new object is created and contains the path to that object.
+          example: '11483'
+        messages:
+          type: array
+          description: A list of messages related to the result of the operation, such as success or error messages.
+          items:
+            type: string
+          example: [ "Success" ]
+      
+    JsonResultOfProfiles:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                records:
+                  type: array
+                  description: An array of profile objects.
+                  items:
+                    $ref: "#/components/schemas/ProfileSearch"
+                totalPages:
+                  type: integer
+                  description: Total pages of records for given `limit`
+
+    JsonResultOfProfile:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/Profile"
+              description: A single profile object.
+
+    Profile:
+      type: object
+      properties:
+        entityId:
+          type: integer
+          format: int64
+          description: The unique internal ID of the profile.
+          example: 20337112
+        userName:
+          type: string
+          description: The unique portable ID of the profile.
+          example: user-1
+        nickName:
+          type: string
+          description: The nickname of the profile.
+          example: Sales Master
+        firstName:
+          type: string
+          description: The first name of the profile
+          example: John
+        surName:
+          type: string
+          description: The surname of the profile.
+          example: Smith
+        email:
+          type: string
+          description: The email of the profile.
+          example: johnsmith@email.domain
+        phone:
+          type: string
+          description: The phone number  of the profile.
+          example: 012345678
+        birthDate:
+          type: string
+          format: date-time
+          description: The birth date of the profile.
+          example: 1990-07-19T00:00:00.000+1000
+        createdDate:
+          type: string
+          format: date-time
+          description: The date when the profile was created.
+          example: 2024-04-03T12:06:28.018+1000
+        enabled:
+          type: boolean
+          description: Indicates whether the profile is enabled.
+          example: true
+        memberships:
+          type: array
+          description: The list of memberships associated with the profile.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The unique ID of the membership.
+                example: 12345
+              group:
+                type: integer
+                format: int64
+                description: The unique ID of the group the profile belongs to.
+                example: 63
+              groupName:
+                type: string
+                description: The name of the group the profile belongs to.
+                example: participant
+              groupTitle:
+                type: string
+                description: The title of the group the profile belongs to.
+                example: Participant
+              org:
+                type: integer
+                format: int64
+                description: The unique ID of the organisation the profile belongs to.
+                example: 107
+              orgId:
+                type: string
+                description: The name of the organisation the profile belongs to.
+                example: ard-drive
+              orgTitle:
+                type: string
+                description: The title of the organisation the profile belongs to.
+                example: Hard Drive
+              extraFields:
+                type: object
+                description: The extra field values of the profile associated with this membership.
+                properties:
+                  extra-field-name-1:
+                    type: string
+                    description: The name of the extra field
+                    example: Value 1
+                  extra-field-name-2:
+                    type: string
+                    description: The name of the extra field
+                    example: Value 2
+        addresses:
+            type: array
+            description: The list of addresses of the user.
+            items:
+              type: object
+              properties:
+                addressLine1:
+                  type: string
+                  description: The primary address line of the user.
+                  example: 92 McPherson Road
+                addressLine2:
+                  type: string
+                  description: The secondary address line of the user, if any.
+                  example: null
+                city:
+                  type: string
+                  description: The city of the user's address.
+                  example: GREAT SOUTHERN
+                addressState:
+                  type: string
+                  description: The state or region code of the user's address.
+                  example: VIC
+                postcode:
+                  type: string
+                  description: The postal code of the user's address.
+                  example: 3685
+                country:
+                  type: string
+                  description: The country code of the user's address.
+                  example: AU
+    ProfileSearch:
+      type: object
+      properties:
+        entityId:
+          type: integer
+          format: int64
+          description: The unique internal ID of the profile.
+          example: 20337112
+        userName:
+          type: string
+          description: The unique portable ID of the profile.
+          example: user-1
+        nickName:
+          type: string
+          description: The nickname of the profile.
+          example: Sales Master
+        firstName:
+          type: string
+          description: The first name of the profile
+          example: John
+        surName:
+          type: string
+          description: The surname of the profile.
+          example: Smith
+        email:
+          type: string
+          description: The email of the profile.
+          example: johnsmith@email.domain
+        phone:
+          type: string
+          description: The phone number  of the profile.
+          example: 012345678
+        addresses:
+            type: array
+            description: The list of addresses of the user.
+            items:
+              type: object
+              properties:
+                addressLine1:
+                  type: string
+                  description: The primary address line of the user.
+                  example: 92 McPherson Road
+                addressLine2:
+                  type: string
+                  description: The secondary address line of the user, if any.
+                  example: null
+                city:
+                  type: string
+                  description: The city of the user's address.
+                  example: GREAT SOUTHERN
+                addressState:
+                  type: string
+                  description: The state or region code of the user's address.
+                  example: VIC
+                postcode:
+                  type: string
+                  description: The postal code of the user's address.
+                  example: 3685
+                country:
+                  type: string
+                  description: The country code of the user's address.
+                  example: AU
+    Organisation:
+      type: object
+      properties:
+        entityId:
+          type: integer
+          format: int64
+          description: The unique internal ID of the organisation.
+          example: 107
+        entityName:
+          type: string
+          description: The unique portable ID of the organisation.
+          example: org-1
+        orgTitle: 
+          type: string
+          description: The title of the organisation.
+          example: Hard Drive
+        parentId:
+          type: integer
+          format: int64
+          description: The internal ID of the parent organisation.
+          example: 4
+        parentOrgId:
+          type: string
+          description: The portable ID of the parent organisation.
+          example: parent-1
+        email:
+          type: string
+          format: email
+          description: The email of the organisation.
+          example: harddrive@mail.domain
+        phone:
+          type: string
+          description: The phone number of the organisation.
+          example: +61111111
+        address:
+          type: string
+          description: The primary address line of the organisation.
+          example: 2 McPherson Road
+        addressLine2:
+          type: string
+          nullable: true
+          description: The secondary address line of the organisation.
+          example: null
+        city:
+          type: string
+          description: The city of the organisation's address.
+          example: GREAT SOUTHERN
+        addressState:
+          type: string
+          description: The state or region code of the organisation's address
+          example: VIC
+        postcode:
+          type: string
+          description: The postal code of the organisation's address.
+          example: 3685
+        country:
+          type: string
+          description: The country code of the organisation's address.
+          example: AU
+        createdDate:
+          type: string
+          format: date-time
+          description: The date when the organisation was created.
+          example: 2024-06-21T13:47:02.013+1000
+        orgTypes:
+          type: array
+          description: The list of organisation types associated with the organisation.
+          items:
+            $ref: "#/components/schemas/OrgType"
+              
+    OrgType:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The unique internal ID of the organisation type.
+          example: 224
+        name:
+          type: string
+          description: The unique name of the organisation type.
+          example: store
+        title:
+          type: string
+          description: The title of the organisation type.
+          example: Store
+
+    JsonResultOfOrganisations:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                totalRecords:
+                  type: integer
+                  format: int64
+                  description: The total organisations matching the query without `limit` restriction.
+                  example: 1000
+                records:
+                  type: array
+                  description: The organisations matching the query.
+                  items:
+                    $ref: "#/components/schemas/Organisation"
+
+    JsonResultOfOrganisation:
+      allOf:
+        - $ref: "#/components/schemas/JsonResult"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/Organisation"
+              description: A single organisation object.  
+tags:
+  - name: Profiles
+    description: Operations about profiles
+  - name: Organisations
+    description: Operations about organisations and organisation types
+
+paths:
+  /profiles:
+    get:
+      tags:
+        - Profiles
+      summary: Get a list of profiles
+      parameters:
+        - name: limit
+          in: query
+          description: Limit the number of results returned.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            example: 100
+        - name: offset
+          in: query
+          description: Offset the results by a certain number for pagination.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            example: 0
+        - name: query
+          in: query
+          description: Query string for searching profiles by `User ID`, `userName`, `email`, `firstName`, `lastName`, or `phone`.
+          required: false
+          schema:
+            type: string
+            example: John Smith
+        - name: groupId
+          in: query
+          description: The `Name` or `ID` of the group the users are a member of.
+          schema:
+            type: string
+            example: group-1
+        - name: orgId
+          in: query
+          description: The `Org ID` or `ID` of the organisation the users are a member of.
+          schema:
+            type: string
+            example: org-1
+        - name: sortBy
+          in: query
+          description: The field is used to sort the results.
+          schema:
+            type: string
+            default: entityId
+            enum:
+              - entityId
+              - userName
+              - firstName
+              - surName
+              - email
+        - name: sortOrder
+          in: query
+          description: >
+            Sort order of the results:
+              *  `desc` - Sort in descending order
+              *  `asc` -  Sort in ascending order
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResultOfProfiles"
+              examples:
+                Success:
+                  value:
+                    data:
+                      totalRecords: 1000
+                      records:
+                        - entityId: 20337112
+                          userName: john-smith
+                          nickName: Sales Master
+                          firstName: John
+                          surName: Smith
+                          email: johnsmith@email.domain
+                          phone: 012345678
+                          addresses: 
+                            - addressLine1: 92 McPherson Road,
+                              addressLine2: null,
+                              city: GREAT SOUTHERN,
+                              addressState: VIC,
+                              postcode: 3685,
+                              country: AU
+                    fieldMessages: []
+                    messages: []
+                    nextHref: null
+                    status: true
+                Failure:
+                  value:
+                    data: null
+                    fieldMessages: []
+                    messages:
+                      - No profiles found
+                    nextHref: null
+                    status: false
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - field: groupId
+                        message: Group is invalid
+                    messages: []
+                    nextHref: null
+                    status: false
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+    post:
+      tags:
+        - Profiles
+      summary: Create a new profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of parameters for creating profiles. Each item creates one profile
+              items:
+                type: object
+                required:
+                  - firstName
+                  - memberships
+                properties:
+                  userName:
+                    type: string
+                    description: >
+                      The unique portable ID of the profile, which should be be unique if provided. If a duplicate is detected, a random value will be generated and used instead.
+                    example: sales-master
+                  firstName:
+                    type: string
+                    description: The first name of the profile.
+                    example: John
+                  surName:
+                    type: string
+                    description: The surname of the profile.
+                    example: Smith
+                  nickName:
+                    type: string
+                    description: The nickname of the profile.
+                    example: Sales Master
+                  email:
+                    type: string
+                    description: The email of the profile.
+                    example: johnsmith@email.domain
+                  phone:
+                    type: string
+                    description: The phone number of the profile.
+                    example: 0123456789
+                  birthDate:
+                    type: string
+                    format: date-time
+                    description: The birth date of the profile.
+                    example: 1990-07-19T00:00:00.000+1000
+                  memberships:
+                    type: array
+                    description: The list of memberships that will be created and assigned to the profile.
+                    items:
+                      type: object
+                      required:
+                        - groupId
+                      properties:
+                        groupId:
+                          description: >
+                              The identifier of the group associated with the membership. If present, it must contain a value.<br>
+                              The field could be either `ID`, `name`, but it must follow the format below:
+                                * `ID`: The value must be a whole number
+                                * `name`: The value must be a string
+                          anyOf:
+                            - type: integer
+                              format: int64
+                              example: 90337712
+                            - type: string
+                              example: sales-managers
+                        orgId:
+                          description: >
+                            The identifier of the organisation associated with the membership. If present, it must contain a value.<br>
+                            The field could be either `ID`, `Org ID`, but it must follow the format below:
+                              * `ID`: The value must be a whole number
+                              * `Org ID`: The value must be a string
+                          anyOf:
+                            - type: integer
+                              format: int64
+                              example: 734534 
+                            - type: string
+                              example: org-1
+                        extraFields:
+                          type: object
+                          description: The extra field values of the membership. Each field name must be present in the group’s extra fields
+                          properties:
+                            extra-field-name-1:
+                              type: string
+                              description: The name of the field you want to update
+                              example: Value 1
+                            extra-field-name-2:
+                              type: string
+                              description: The name of the field you want to update
+                              example: Value 2
+                 
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResult"
+              examples:
+                Success:
+                    value:
+                        data: null
+                        fieldMessages: []
+                        messages: []
+                        nextHref: "11498"
+                        status: true
+                Failure:
+                  value:
+                    data: null
+                    fieldMessages: []
+                    messages:
+                      - Cannot create profiles
+                    nextHref: null
+                    status: false
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                        - item: 0
+                          field: email
+                          message: A profile already exists with the requested email gnarvictor@email.domain
+                    messages: []
+                    nextHref: null
+                    status: false
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+  /profiles/{id}:
+    head:
+      tags:
+        - Profiles
+      summary: Determine the existence of the profile, returns no content
+      parameters:
+        - name: id
+          in: path
+          description: The `User ID` or `ID` of the profile. If the `User ID` does not match, the `ID` will be used to resolve the profile.
+          required: true
+          schema:
+            type: string
+          example: user-1 OR 11498
+      responses:
+        200:
+          description: Profile exists
+        404:
+          description: Profile does not exist
+    get:
+      tags:
+        - Profiles
+      summary: Get a profile
+      parameters:
+        - name: id
+          in: path
+          description: The `User ID` or `ID` of the profile. If the `User ID` does not match, the `ID` will be used to resolve the profile.
+          required: true
+          schema:
+            type: string
+          example: user-1 OR 11498
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResultOfProfile"
+              example:
+                data:
+                  entityId: 11498
+                  userName: mid-master
+                  nickName: Mid Master
+                  firstName: Gnar
+                  surName: Victor
+                  email: gnarvictor@email.domain
+                  phone: 0123456789
+                  addresses:
+                      - addressLine1: 92 McPherson Road,
+                        addressLine2: null,
+                        city: GREAT SOUTHERN,
+                        addressState: VIC,
+                        postcode: 3685,
+                        country: AU
+                  birthDate: 1995-07-19T00:00:00.000+1000
+                  createdDate: 2025-11-04T23:11:28.195+1000
+                  enabled: true
+                  memberships:
+                    - id: 12345
+                      group: 63
+                      groupName: participant
+                      groupTitle: Participant
+                      org: 11477
+                      orgId: c1bf1812-6b03-4c89-ae58-0e2be678cb5a
+                      orgTitle: ACME
+                      createdDate: 2024-11-04T23:11:28.196+1000
+                      modifiedDate: 2024-11-04T23:11:28.204+1000
+                      expiryDate: null
+                      extraFields:
+                        promotion-code: PI-12345
+                        invoice-code: INV-12345
+                    - id: 67890
+                      group: 4
+                      groupName: leads
+                      groupTitle: leads
+                      org: 1
+                      orgId: rootorg
+                      orgTitle: rootorg
+                      createdDate: 2024-11-04T23:11:28.211+1000
+                      modifiedDate: 2024-11-04T23:11:28.211+1000
+                      expiryDate: null
+                      extraFields: null
+                fieldMessages: []
+                messages: []
+                nextHref: null
+                status: true
+        404:
+          description: Profile does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+    post:
+      tags:
+        - Profiles
+      summary: Update a profile
+      parameters:
+        - name: id
+          in: path
+          description: The `User ID` or `ID` of the profile. If the `User ID` does not match, the `ID` will be used to resolve the profile.
+          required: true
+          schema:
+            type: string
+          example: user-1 OR 11498
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userName:
+                  type: string
+                  description: >
+                    The unique portable ID of the profile, which must be unique if provided<br>
+                    Changing the username will reset the profile's password.
+                  example: sales-master
+                firstName:
+                  type: string
+                  description: The first name of the profile.
+                  example: Yii
+                surName:
+                  type: string
+                  description: The surname of the profile.
+                  example: Zed
+                nickName:
+                  type: string
+                  description: The nickname of the profile.
+                  example: Sales Master
+                email:
+                  type: string
+                  description: The email of the profile.
+                  example: sales-master@email.domain
+                phone:
+                  type: string
+                  description: The phone number of the profile.
+                  example: 09876543
+                enabled:
+                  type: boolean
+                  description: Indicates whether the profile is enabled.
+                  example: false
+                birthDate:
+                  type: string
+                  format: date-time
+                  description: The birth date of the profile.
+                  example: 1992-07-19T00:00:00.000+1000
+                extraFields:
+                  type: object
+                  description: The extra field values of the profile.
+                  properties:
+                    extra-field-name-1:
+                      type: string
+                      description: The name of the field you want to update
+                      example: Value 1
+                    extra-field-name-2:
+                      type: string
+                      description: The name of the field you want to update
+                      example: Value 2
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResult"
+              examples:
+                Success:
+                    value:
+                        data:
+                          entityId: 11498
+                          userName: top-master
+                          nickName: Mid Master
+                          firstName: Yii
+                          surName: Zed
+                          email: top-master@email.domain
+                          phone: 09876543
+                          addresses:
+                            - addressLine1: 92 McPherson Road,
+                              addressLine2: null,
+                              city: GREAT SOUTHERN,
+                              addressState: VIC,
+                              postcode: 3685,
+                              country: AU
+                          birthDate: 1992-07-19T00:00:00.000+1000
+                          createdDate: 2024-11-04T23:11:28.195+1000
+                          enabled: true
+                          memberships:
+                            - id: 12345
+                              group: 63
+                              groupName: participant
+                              groupTitle: Participant
+                              org: 11477
+                              orgId: c1bf1812-6b03-4c89-ae58-0e2be678cb5a
+                              orgTitle: ACME
+                              createdDate: 2024-11-04T23:11:28.196+1000
+                              modifiedDate: 2024-11-05T00:29:31.246+1000
+                              expiryDate: null
+                              extraFields:
+                                promotion-code: PI-4567
+                                invoice-code: INV-4567
+                            - id: 67890
+                              group: 4
+                              groupName: leads
+                              groupTitle: leads
+                              org: 1
+                              orgId: rootorg
+                              orgTitle: rootorg
+                              createdDate: 2024-11-04T23:11:28.211+1000
+                              modifiedDate: 2024-11-04T23:11:28.211+1000
+                              expiryDate: null
+                              extraFields: null
+                        fieldMessages: []
+                        messages: []
+                        nextHref: null
+                        status: true
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - field: userName
+                        message: Profile already exists with the requested username bot-master
+                    messages: []
+                    nextHref: null
+                    status: false
+        404:
+          description: Profile does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+  /profiles/{id}/memberships:   
+    post:
+      tags:
+        - Profiles
+      summary: Create a membership
+      parameters:
+        - name: id
+          in: path
+          description: The `User ID` or `ID` of the profile. If the `User ID` does not match, the `ID` will be used to resolve the profile.
+          required: true
+          schema:
+            type: string
+          example: user-1 OR 11498
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of parameters for creating memberships. Each item creates one membership
+              items:
+                type: object
+                required:
+                  - groupId
+                  - orgId
+                properties:
+                  groupId:
+                    description: >
+                        The identifier of the group associated with the membership. If present, it must contain a value.<br>
+                        The field could be either `ID`, `name`, but it must follow the format below:
+                          * `ID`: The value must be a whole number
+                          * `name`: The value must be a string
+                    anyOf:
+                      - type: integer
+                        format: int64
+                        example: 90337712
+                      - type: string
+                        example: sales-managers
+                  orgId:
+                    description: >
+                      The identifier of the organisation associated with the membership. If present, it must contain a value.<br>
+                      The field could be either `ID`, `Org ID`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `Org ID`: The value must be a string
+                    anyOf:
+                      - type: integer
+                        format: int64
+                        example: 734534 
+                      - type: string
+                        example: org-1
+                  extraFields:
+                    type: object
+                    description: The extra field values of the membership. Each field name must be present in the group’s extra fields
+                    properties:
+                      extra-field-name-1:
+                        type: string
+                        description: The name of the field you want to update
+                        example: Value 1
+                      extra-field-name-2:
+                        type: string
+                        description: The name of the field you want to update
+                        example: Value 2
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResult"
+              examples:
+                Success:
+                    value:
+                        data: null
+                        fieldMessages: []
+                        messages: []
+                        nextHref: "93869229"
+                        status: true
+        404:
+          description: Profile does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+  /profiles/{id}/memberships/{membershipId}:
+    post:
+      tags:
+        - Profiles
+      summary: Update a membership
+      parameters:
+        - name: id
+          in: path
+          description: The `User ID` or `ID` of the profile. If the `User ID` does not match, the `ID` will be used to resolve the profile.
+          required: true
+          schema:
+            type: string
+          example: user-1 OR 11498
+        - name: membershipId
+          in: path
+          description: The `ID` of the membership.
+          required: true
+          schema:
+            type: string
+          example: 93869229
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - groupId
+                - orgId
+              properties:
+                groupId:
+                  description: >
+                      The identifier of the group associated with the membership. If present, it must contain a value.<br>
+                      The field could be either `ID`, `name`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `name`: The value must be a string
+                  anyOf:
+                    - type: integer
+                      format: int64
+                      example: 90337712
+                    - type: string
+                      example: sales-managers
+                orgId:
+                  description: >
+                    The identifier of the organisation associated with the membership. If present, it must contain a value.<br>
+                    The field could be either `ID`, `Org ID`, but it must follow the format below:
+                      * `ID`: The value must be a whole number
+                      * `Org ID`: The value must be a string
+                  anyOf:
+                    - type: integer
+                      format: int64
+                      example: 734534 
+                    - type: string
+                      example: org-1
+                extraFields:
+                  type: object
+                  description: The extra field values of the membership. Each field name must be present in the group’s extra fields
+                  properties:
+                    extra-field-name-1:
+                      type: string
+                      description: The name of the field you want to update
+                      example: Value 1
+                    extra-field-name-2:
+                      type: string
+                      description: The name of the field you want to update
+                      example: Value 2
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResult"
+              examples:
+                Success:
+                    value:
+                        data: null
+                        fieldMessages: []
+                        messages: []
+                        nextHref: null
+                        status: true
+        404:
+          description: Profile or membership does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+    delete:
+      tags:
+        - Profiles
+      summary: Delete a membership
+      parameters:
+        - name: id
+          in: path
+          description: The `ID` of the profile. If the `User ID` does not match, the `ID` will be used to resolve the profile.
+          required: true
+          schema:
+            type: string
+          example: user-1 OR 11498
+        - name: membershipId
+          in: path
+          description: The `ID` of the membership.
+          required: true
+          schema:
+            type: string
+          example: 93869229
+      responses:
+        204:
+          description: Successful
+        404:
+          description: Profile does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+  /orgs:
+    get:
+      tags:
+        - Organisations
+      summary: Get a list of organisations
+      parameters:
+        - name: limit
+          in: query
+          description: Limit the number of results returned.
+          required: true
+          schema:
+            type: integer
+            example: 100
+        - name: offset
+          in: query
+          description: Offset the results by a certain number for pagination.
+          required: true
+          schema:
+            type: integer
+            example: 0
+        - name: query
+          in: query
+          description: Query string for searching organisations by `Org ID`, `title`, `email` or `phone`.
+          required: false
+          schema:
+            type: string
+            example: Hard Drive
+        - name: orgTypeId
+          in: query
+          description: The `ID` of the organisation type that organisation belong to.
+          schema:
+            type: integer
+            format: int64
+            example: 3881759
+        - name: sortBy
+          in: query
+          description: The field is used to sort the results.
+          schema:
+            type: string
+            default: entityId
+            enum:
+              - entityId
+              - entityName
+              - orgTitle
+              - email
+        - name: sortOrder
+          in: query
+          description: >
+            Sort order of the results:
+              *  `desc` - Sort in descending order
+              *  `asc` -  Sort in ascending order
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResultOfOrganisations"
+              examples:
+                Success:
+                  value:
+                      data:
+                        totalRecords: 1000
+                        records:
+                          - entityId: 107,
+                            entityName: hard-drive
+                            orgTitle: Hard Drive
+                            parentId: 4,
+                            parentOrgId: parent-1
+                            email: harddrive@mail.domain
+                            phone: "+61111111"
+                            address: 2 McPherson Road
+                            addressLine2: null
+                            city: GREAT SOUTHERN
+                            addressState: VIC
+                            postcode: 3685
+                            country: AU
+                            createdDate: 2024-06-21T13:47:02.013+1000
+                            orgTypes:
+                              - id: 224
+                                name: store
+                                title: Store
+                              - id: 225
+                                name: region
+                                title: Region
+                            extraFields:
+                              invoice-id: INV-1234
+                              promotion-id: PI-1234
+                      fieldMessages: []
+                      messages: []
+                      nextHref: null
+                      status: true
+                Failure:
+                  value:
+                    data: null
+                    fieldMessages: []
+                    messages:
+                      - No organisations found
+                    nextHref: null
+                    status: false
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - field: orgTypeId
+                        message: Organisation type 'kademi-id-224' is invalid
+                    messages: []
+                    nextHref: null
+                    status: false
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+    post:
+      tags:
+        - Organisations
+      summary: Create organisations
+      requestBody:
+        description: Create organisations
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of parameters for creating organisations. Each item creates one organisation
+              items:
+                type: object
+                required:
+                  - title
+                properties:
+                  title:
+                    type: string
+                    description: The title of the organisation.
+                    example: ACME
+                  orgId:
+                    type: string
+                    description: The unique name of the organisation. If provided, it must be unique. If not provided, it will be automatically generate.
+                    example: acme
+                  email:
+                    type: string
+                    description: The email of the organisation.
+                    example: acme@email.domain
+                  phone:
+                    type: string
+                    description: The phone number of the organisation.
+                    example: "+61111111"
+                  parentOrgId:
+                    description: >
+                      The identifier of the parent organisation. If present, it must contain a value.<br>
+                      The field could be either `ID` or `Org ID`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `Org ID`: The value must be a string
+                    anyOf:
+                      - type: integer
+                        format: int64
+                        example: 224
+                      - type: string
+                        example: store
+                  orgTypeIds:
+                    type: array
+                    description:  >
+                      The list of identifiers for organisation types to be assigned to the organisation. If present, it must contain at least one value.<br>
+                      The list's item could be either `ID` or `name`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `name`: The value must be a string
+                    items:
+                      anyOf:
+                        - type: integer
+                          format: int64
+                          example: 224
+                        - type: string
+                          example: store
+                    example: [224 , "region"] 
+                  extraFields:
+                    type: object
+                    description: The extra field values of the organisation. Extra fields are only assigned to organisation if `orgTypes` is provided and the field is valid for an organistion type.
+                    properties:
+                      extra-field-name-1:
+                        type: string
+                        description: The name of the field you want to update.
+                        example: Value 1
+                      extra-field-name-2:
+                        type: string
+                        description: The name of the field you want to update.
+                        example: Value 2
+                  address:
+                    type: string
+                    description: The primary address line of the organisation.
+                    example: No.1 Ricky St
+                  addressLine2:
+                    type: string
+                    description: The secondary address line of the organisation.
+                    example: Sydney
+                  city:
+                    type: string
+                    description: The city of the organisation's address.
+                    example: GREAT SOUTHERN
+                  addressState:
+                    type: string
+                    description: The state or region code of the organisation's address
+                    example: NSW
+                  postcode:
+                    type: string
+                    description: The postal code of the organisation's address.
+                    example: 2030
+                  country:
+                    type: string
+                    description: The country code of the organisation's address.
+                    example: AU
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResult"
+              examples:
+                Success:
+                    value:
+                        data: null
+                        fieldMessages: []
+                        messages: []
+                        nextHref: '11483'
+                        status: true
+                Failure:
+                  value:
+                    data: null
+                    fieldMessages: []
+                    messages:
+                      - Cannot create organisations
+                    nextHref: null
+                    status: false
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - item: 0
+                        field: title
+                        message: A value is required
+                    messages: []
+                    nextHref: null
+                    status: false
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+  /orgs/org-types:
+    get:
+      tags:
+        - Organisations
+      summary: Get all organisation types
+      responses:
+        200:
+          description: A list of all organisation types
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResult"
+              examples:
+                Success:
+                    value:
+                        data: 
+                          - id: 224
+                            name: store
+                            title: Store
+                          - id: 225
+                            name: region
+                            title: Region
+                        fieldMessages: []
+                        messages: []
+                        nextHref: ""
+                        status: true
+                Failure:
+                  value:
+                    data: null
+                    fieldMessages: []
+                    messages:
+                      - No organisation types found
+                    nextHref: ""
+                    status: false
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+  /orgs/{id}:
+    head:
+      tags:
+        - Organisations
+      summary: Determine the existence of the org, returns no content
+      parameters:
+        - name: id
+          in: path
+          description: The `Org ID` or `ID` of the organisation. If the `Org ID` does not match, the `ID` will be used to resolve the organisation.
+          required: true
+          schema:
+            type: string
+          example: org-1 OR 11483
+      responses:
+        200:
+          description: Organisation is existed
+        404:
+          description: Organisation is not existed
+    get:
+      tags:
+        - Organisations
+      summary: Get an organisation
+      parameters:
+        - name: id
+          in: path
+          description: The `Org ID` or `ID` of the organisation. If the `Org ID` does not match, the `ID` will be used to resolve the organisation.
+          required: true
+          schema:
+            type: string
+          example: org-1 OR 11483
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResultOfOrganisation"
+              example:
+                data:
+                  entityId: 107
+                  entityName: hard-drive
+                  orgTitle: Hard Drive
+                  parentId: 4,
+                  parentOrgId: parent-1
+                  email: harddrive@mail.domain
+                  phone: "+61111111"
+                  address: 2 McPherson Road
+                  addressLine2: null
+                  city: GREAT SOUTHERN
+                  addressState: VIC
+                  postcode: 3685
+                  country: AU
+                  createdDate: 2024-06-21T13:47:02.013+1000
+                  orgTypes:
+                    - id: 224
+                      name: store
+                      title: Store
+                    - id: 225
+                      name: region
+                      title: Region
+                  extraFields:
+                    invoice-id: INV-1234
+                    promotion-id: PI-1234
+                fieldMessages: []
+                messages: []
+                nextHref: null
+                status: true
+        404:
+          description: Organisation does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Unauthorized / Bad request
+    post:
+      tags:
+        - Organisations
+      summary: Update an organisation
+      parameters:
+        - name: id
+          in: path
+          description: The `Org ID` or `ID` of the organisation. If the `Org ID` does not match, the `ID` will be used to resolve the organisation.
+          required: true
+          schema:
+            type: string
+          example: org-1 OR 11483
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The title of the organisation.
+                  example: New ACME
+                orgId:
+                  type: string
+                  description: The unique name of the organisation. If provided, it must be unique.
+                  example: new-acme
+                email:
+                  type: string
+                  description: The email of the organisation.
+                  example: new-acme@email.domain
+                phone:
+                  type: string
+                  description: The phone number of the organisation.
+                  example: "+64073478469"
+                parentOrgId:
+                  description: The `ID` or `Org ID` of the parent organisation. If the value is an `ID`, it must have `kademi-id-` as a prefix (e.g., `kademi-id-{ID}`)
+                  type: string
+                  example: kademi-id-5
+                extraFields:
+                  type: object
+                  description: The extra field values of the organisation. Extra fields are only assigned to organisation if `orgTypes` is provided and the field is valid for an organistion type.
+                  properties:
+                    extra-field-name-1:
+                      type: string
+                      description: The name of the field you want to update.
+                      example: Value 1
+                    extra-field-name-2:
+                      type: string
+                      description: The name of the field you want to update.
+                      example: Value 2
+                address:
+                  type: string
+                  description: The primary address line of the organisation.
+                  example: 58 Pururu Street
+                addressLine2:
+                  type: string
+                  description: The secondary address line of the organisation.
+                  example: null
+                city:
+                  type: string
+                  description: The city of the organisation's address.
+                  example: Rotorua
+                addressState:
+                  type: string
+                  description: The state or region code of the organisation's address
+                  example: AUK
+                postcode:
+                  type: string
+                  description: The postal code of the organisation's address.
+                  example: 3015
+                country:
+                  type: string
+                  description: The country code of the organisation's address.
+                  example: NZ
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResultOfOrganisation"
+              examples:
+                Success:
+                  value:
+                      data:
+                        entityId: 107
+                        entityName: new-acme
+                        orgTitle: New ACME
+                        parentId: 5
+                        parentOrgId: parent-2
+                        email: new-acme@email.domain
+                        phone: "+64073478469"
+                        address: 58 Pururu Street
+                        addressLine2: null
+                        city: Rotorua
+                        addressState: AUK
+                        postcode: 3015
+                        country: NZ
+                        createdDate: 2024-11-01T17:07:24.755+1000
+                        orgTypes:
+                          - id: 224
+                            name: store
+                            title: Store
+                          - id: 225
+                            name: region
+                            title: Region
+                        extraFields:
+                          invoice-id: INV-1234
+                          promotion-id: PI-1234
+                      fieldMessages: []
+                      messages: []
+                      nextHref: null
+                      status: true
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - field: orgId
+                        message: Organisation already exists
+                    messages: []
+                    nextHref: null
+                    status: false
+        404:
+          description: Organisation does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Bad request
+    delete:
+      tags:
+        - Organisations
+      summary: Delete an organisation
+      parameters:
+        - name: id
+          in: path
+          description: The `Org ID` or `ID` of the organisation. If the `Org ID` does not match, the `ID` will be used to resolve the organisation.
+          required: true
+          schema:
+            type: string
+          example: org-1 OR 11483
+      responses:
+        204:
+          description: Successful
+        500:
+          description: Internal server error
+        404:
+          description: Organisation does not exist
+  /orgs/{id}/org-types:
+    post:
+      tags:
+        - Organisations
+      summary: Update the list of organisation types in the organisation
+      parameters:
+        - name: id
+          in: path
+          description: The `ID` of the organisation.
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 11483
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orgTypeIds
+                - remove
+              properties:
+                orgTypeIds:
+                    type: array
+                    description:  >
+                      The list of identifiers for organisation types to be assigned to the organisation. If present, it must contain at least one value.<br>
+                      The list's item could be either `ID` or `name`, but it must follow the format below:
+                        * `ID`: The value must be a whole number
+                        * `name`: The value must be a string
+                    items:
+                      anyOf:
+                        - type: integer
+                          format: int64
+                          example: 224
+                        - type: string
+                          example: store
+                    example: [224 , "region"] 
+                remove:
+                  type: boolean
+                  enum:
+                    - false
+                    - true
+                  description: >
+                    Add or remove:
+                      *  `false` - Add the organisation types in `orgTypeIds` from the organisation
+                      *  `true` -  Remove the organisation types in `orgTypeIds` from the organisation
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonResult"
+              examples:
+                Success:
+                  value:
+                      data:
+                        entityId: 107
+                        entityName: new-acme
+                        orgTitle: New ACME
+                        parentId: 5
+                        parentOrgId: parent-2
+                        email: new-acme@email.domain
+                        phone: "+64073478469"
+                        address: 58 Pururu Street
+                        addressLine2: null
+                        city: Rotorua
+                        addressState: AUK
+                        postcode: 3015
+                        country: NZ
+                        createdDate: 2024-11-01T17:07:24.755+1000
+                        orgTypes:
+                          - id: 224
+                            name: store
+                            title: Store
+                          - id: 225
+                            name: region
+                            title: Region
+                        extraFields:
+                          invoice-id: INV-1234
+                          promotion-id: PI-1234
+                      fieldMessages: []
+                      messages: []
+                      nextHref: null
+                      status: true
+                Invalid field:
+                  value:
+                    data: null
+                    fieldMessages:
+                      - field: remove
+                        message: A boolean value is required
+                    messages: []
+                    nextHref: null
+                    status: false
+        404:
+          description: Organisation does not exist
+        500:
+          description: Internal server error
+        400:
+          description: Bad request
+
+security:
+  - basicAuth: []
+  # - openIdConnect: []
